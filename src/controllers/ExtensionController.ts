@@ -78,7 +78,7 @@ export class ExtensionController {
         setTimeout(async () => {
             if (event.document.isDirty) {
                 await event.document.save();
-                this.metricsManager.recordSave();
+                this.metricsManager.recordSave(event.document.fileName);
                 this.updateStatusBar();
             }
         }, 1000);
