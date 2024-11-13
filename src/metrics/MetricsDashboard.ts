@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { formatTime } from '../utils/formatters';
 
 export class MetricsDashboard {
     private panel: vscode.WebviewPanel | undefined;
@@ -32,33 +31,130 @@ export class MetricsDashboard {
             <!DOCTYPE html>
             <html>
                 <head>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
                     <style>
-                        body { padding: 20px; }
+                        body { 
+                            padding: 20px; 
+                            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                            color: var(--vscode-foreground);
+                        }
+                        .metrics-container {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                            gap: 20px;
+                            margin-bottom: 30px;
+                        }
                         .metric-card {
                             background: var(--vscode-editor-background);
-                            padding: 15px;
-                            margin: 10px 0;
-                            border-radius: 5px;
+                            padding: 20px;
+                            border-radius: 8px;
+                            border: 1px solid var(--vscode-widget-border);
+                        }
+                        .metric-value {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: var(--vscode-textLink-activeForeground);
+                        }
+                        .metric-label {
+                            font-size: 14px;
+                            color: var(--vscode-descriptionForeground);
+                        }
+                        .chart-container {
+                            margin-top: 30px;
+                            padding: 20px;
+                            background: var(--vscode-editor-background);
+                            border-radius: 8px;
+                            border: 1px solid var(--vscode-widget-border);
+                        }
+                        h1, h2 {
+                            color: var(--vscode-foreground);
                         }
                     </style>
                 </head>
                 <body>
-                    <h1>AutoSave Metrics</h1>
-                    <div class="metric-card">
-                        <h2>Today</h2>
-                        <p>Autosaves: ${metrics.daily.timesSaved}</p>
-                        <p>Time Saved: ${formatTime(metrics.daily.timeSaved)}</p>
+                    <h1>AutoSave Metrics Dashboard</h1>
+                    
+                    <div class="metrics-container">
+                        <div class="metric-card">
+                            <div class="metric-value">${metrics.daily.timesSaved}</div>
+                            <div class="metric-label">Saves Today</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${metrics.weekly.timesSaved}</div>
+                            <div class="metric-label">Saves This Week</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${metrics.monthly.timesSaved}</div>
+                            <div class="metric-label">Saves This Month</div>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <h2>This Week</h2>
-                        <p>Autosaves: ${metrics.weekly.timesSaved}</p>
-                        <p>Time Saved: ${formatTime(metrics.weekly.timeSaved)}</p>
+
+                    <div class="chart-container">
+                        <canvas id="savesChart"></canvas>
                     </div>
-                    <div class="metric-card">
-                        <h2>This Month</h2>
-                        <p>Autosaves: ${metrics.monthly.timesSaved}</p>
-                        <p>Time Saved: ${formatTime(metrics.monthly.timeSaved)}</p>
+
+                    <div class="chart-container">
+                        <canvas id="timeChart"></canvas>
                     </div>
+
+                    <script>
+                        const ctx1 = document.getElementById('savesChart').getContext('2d');
+                        new Chart(ctx1, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Daily', 'Weekly', 'Monthly'],
+                                datasets: [{
+                                    label: 'Number of Saves',
+                                    data: [
+                                        ${metrics.daily.timesSaved},
+                                        ${metrics.weekly.timesSaved},
+                                        ${metrics.monthly.timesSaved}
+                                    ],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'AutoSave Frequency'
+                                    }
+                                }
+                            }
+                        });
+
+                        const ctx2 = document.getElementById('timeChart').getContext('2d');
+                        new Chart(ctx2, {
+                            type: 'line',
+                            data: {
+                                labels: ['Daily', 'Weekly', 'Monthly'],
+                                datasets: [{
+                                    label: 'Time Saved (seconds)',
+                                    data: [
+                                        ${metrics.daily.timeSaved},
+                                        ${metrics.weekly.timeSaved},
+                                        ${metrics.monthly.timeSaved}
+                                    ],
+                                    fill: true,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Time Saved Trend'
+                                    }
+                                }
+                            }
+                        });
+                    </script>
                 </body>
             </html>
         `;

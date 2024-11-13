@@ -1,16 +1,33 @@
 {
   "name": "enhanced-autosave",
   "displayName": "Enhanced AutoSave",
-  "description": "Smart automatic file saving with metrics",
-  "version": "0.0.1",
+  "description": "Smart automatic file saving with detailed analytics and time-saving metrics. Never lose your work again!",
+  "publisher": "Shellomo",
+  "repository": "https://github.com/Shellomo/vscode-ext-enhanced-autosave",
+  "version": "1.0.2",
+  "icon": "images/autosave-icon.png",
+  "galleryBanner": {
+    "color": "#2C2C54",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
+  "keywords": [
+    "autosave",
+    "productivity",
+    "metrics",
+    "analytics",
+    "time-saving",
+    "auto-backup",
+    "save"
+  ],
   "categories": [
+    "Productivity",
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
