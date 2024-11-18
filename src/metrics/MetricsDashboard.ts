@@ -27,6 +27,17 @@ export class MetricsDashboard {
     }
 
     private getWebviewContent(metrics: any): string {
+        // Prepare file types data
+        const dailyFileTypes = Object.entries(metrics.daily.fileTypes || {}).map(([ext, count]) => ({
+            extension: ext,
+            count: count as number
+        }));
+
+        const weeklyFileTypes = Object.entries(metrics.weekly.fileTypes || {}).map(([ext, count]) => ({
+            extension: ext,
+            count: count as number
+        }));
+
         return `
             <!DOCTYPE html>
             <html>
@@ -66,8 +77,18 @@ export class MetricsDashboard {
                             border-radius: 8px;
                             border: 1px solid var(--vscode-widget-border);
                         }
+                        .chart-row {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 20px;
+                            margin-top: 20px;
+                        }
                         h1, h2 {
                             color: var(--vscode-foreground);
+                        }
+                        .section-title {
+                            margin-top: 30px;
+                            margin-bottom: 15px;
                         }
                     </style>
                 </head>
@@ -97,7 +118,28 @@ export class MetricsDashboard {
                         <canvas id="timeChart"></canvas>
                     </div>
 
+                    <h2 class="section-title">File Types Distribution</h2>
+                    <div class="chart-row">
+                        <div class="chart-container">
+                            <canvas id="dailyFileTypes"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="weeklyFileTypes"></canvas>
+                        </div>
+                    </div>
+
                     <script>
+                        // Helper function to generate random colors
+                        function generateColors(count) {
+                            const colors = [];
+                            for (let i = 0; i < count; i++) {
+                                const hue = (i * 137.508) % 360; // Use golden angle for better distribution
+                                colors.push(\`hsla(\${hue}, 70%, 60%, 0.7)\`);
+                            }
+                            return colors;
+                        }
+
+                        // Saves Chart
                         const ctx1 = document.getElementById('savesChart').getContext('2d');
                         new Chart(ctx1, {
                             type: 'bar',
@@ -126,6 +168,7 @@ export class MetricsDashboard {
                             }
                         });
 
+                        // Time Saved Chart
                         const ctx2 = document.getElementById('timeChart').getContext('2d');
                         new Chart(ctx2, {
                             type: 'line',
@@ -150,6 +193,60 @@ export class MetricsDashboard {
                                     title: {
                                         display: true,
                                         text: 'Time Saved Trend'
+                                    }
+                                }
+                            }
+                        });
+
+                        // Daily File Types Chart
+                        const dailyFileTypes = ${JSON.stringify(dailyFileTypes)};
+                        const ctx3 = document.getElementById('dailyFileTypes').getContext('2d');
+                        new Chart(ctx3, {
+                            type: 'pie',
+                            data: {
+                                labels: dailyFileTypes.map(item => item.extension),
+                                datasets: [{
+                                    data: dailyFileTypes.map(item => item.count),
+                                    backgroundColor: generateColors(dailyFileTypes.length),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Daily File Types Distribution'
+                                    },
+                                    legend: {
+                                        position: 'right'
+                                    }
+                                }
+                            }
+                        });
+
+                        // Weekly File Types Chart
+                        const weeklyFileTypes = ${JSON.stringify(weeklyFileTypes)};
+                        const ctx4 = document.getElementById('weeklyFileTypes').getContext('2d');
+                        new Chart(ctx4, {
+                            type: 'pie',
+                            data: {
+                                labels: weeklyFileTypes.map(item => item.extension),
+                                datasets: [{
+                                    data: weeklyFileTypes.map(item => item.count),
+                                    backgroundColor: generateColors(weeklyFileTypes.length),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Weekly File Types Distribution'
+                                    },
+                                    legend: {
+                                        position: 'right'
                                     }
                                 }
                             }
