@@ -2,14 +2,17 @@ import * as vscode from 'vscode';
 import { MetricsManager } from '../metrics/MetricsManager';
 import { MetricsDashboard } from '../metrics/MetricsDashboard';
 import { formatTime } from '../utils/formatters';
+import { TelemetryService } from '../telemetry';
 
 export class ExtensionController {
     private statusBarItem: vscode.StatusBarItem;
     private metricsButton: vscode.StatusBarItem;
     private metricsManager: MetricsManager;
     private isEnabled: boolean = true;
+    private teleService: TelemetryService;
 
     constructor(private context: vscode.ExtensionContext) {
+        this.teleService = TelemetryService.getInstance(context);
         this.metricsManager = new MetricsManager(context);
         
         // Create status bar items
@@ -53,11 +56,14 @@ export class ExtensionController {
     }
 
     private toggleAutoSave() {
+
         this.isEnabled = !this.isEnabled;
+        this.teleService.sendToggleAutoSaveClickedEvent(true, this.isEnabled);
         this.updateStatusBar();
     }
 
     private showMetrics() {
+        this.teleService.sendShowMetricsClickedEvent(true);
         const dashboard = new MetricsDashboard(this.context);
         dashboard.show(this.metricsManager.getMetrics());
     }
